@@ -1,0 +1,1655 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcenaria Pro - Sistema de Orçamentos e Vendas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wood: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            200: '#e5d1cb',
+                            300: '#d3b2a7',
+                            400: '#be8d7f',
+                            500: '#a86544',
+                            600: '#8c4e31',
+                            700: '#733c24',
+                            800: '#5c301d',
+                            900: '#482719',
+                            950: '#28120b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Print formatting */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .proposal-card {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            @page {
+                margin: 1.2cm;
+            }
+        }
+        .print-only {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col antialiased text-slate-800 bg-slate-100">
+
+    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-40 no-print border-b border-wood-900/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo & Brand Name -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-wood-700 via-wood-600 to-amber-500 flex items-center justify-center shadow-lg text-white">
+                        <i class="fa-solid fa-ruler-combined text-lg"></i>
+                    </div>
+                    <div>
+                        <span id="navBrandName" class="font-extrabold text-base sm:text-lg leading-tight block tracking-tight">Marcenaria Pro</span>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-amber-400 block">Gestão & Orçamentos</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Header Navigation -->
+                <nav class="hidden lg:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 bg-wood-700 text-white shadow-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('orcamento')" id="btn-tab-orcamento" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span>Novo Orçamento</span>
+                    </button>
+                    <button onclick="switchTab('historico')" id="btn-tab-historico" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span>Histórico</span>
+                    </button>
+                    <button onclick="switchTab('materiais')" id="btn-tab-materiais" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <span>Catálogo</span>
+                    </button>
+                    <button onclick="switchTab('custos')" id="btn-tab-custos" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-coins"></i>
+                        <span>Custos Fixos</span>
+                    </button>
+                </nav>
+
+                <!-- Quick Action Button -->
+                <div class="hidden sm:flex items-center space-x-2">
+                    <button onclick="newQuoteInit()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold px-4 py-2 rounded-xl text-xs shadow-lg transition transform hover:-translate-y-0.5 flex items-center space-x-2">
+                        <i class="fa-solid fa-plus-circle text-sm"></i>
+                        <span>Novo Projeto</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Bottom Bar -->
+        <div class="lg:hidden border-t border-slate-800 bg-slate-900/95 backdrop-blur px-2 py-2 flex justify-around items-center">
+            <button onclick="switchTab('dashboard')" id="btn-mob-dashboard" class="mob-btn text-amber-500 flex flex-col items-center text-[10px] font-bold py-1 px-2 rounded-lg">
+                <i class="fa-solid fa-chart-line text-base mb-1"></i>
+                <span>Início</span>
+            </button>
+            <button onclick="switchTab('orcamento')" id="btn-mob-orcamento" class="mob-btn text-slate-400 flex flex-col items-center text-[10px] font-bold py-1 px-2 rounded-lg">
+                <i class="fa-solid fa-calculator text-base mb-1"></i>
+                <span>Orçar</span>
+            </button>
+            <button onclick="switchTab('historico')" id="btn-mob-historico" class="mob-btn text-slate-400 flex flex-col items-center text-[10px] font-bold py-1 px-2 rounded-lg">
+                <i class="fa-solid fa-folder-open text-base mb-1"></i>
+                <span>Propostas</span>
+            </button>
+            <button onclick="switchTab('materiais')" id="btn-mob-materiais" class="mob-btn text-slate-400 flex flex-col items-center text-[10px] font-bold py-1 px-2 rounded-lg">
+                <i class="fa-solid fa-boxes-stacked text-base mb-1"></i>
+                <span>Catálogo</span>
+            </button>
+            <button onclick="switchTab('custos')" id="btn-mob-custos" class="mob-btn text-slate-400 flex flex-col items-center text-[10px] font-bold py-1 px-2 rounded-lg">
+                <i class="fa-solid fa-coins text-base mb-1"></i>
+                <span>Custos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            
+            <!-- Dashboard Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-wood-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden border border-wood-900/50">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+                    <i class="fa-solid fa-hammer text-[220px]"></i>
+                </div>
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="space-y-1">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-2">
+                            <i class="fa-solid fa-circle text-[8px] mr-2 text-emerald-400"></i>Oficina Operacional
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl font-black tracking-tight">Painel de Precificação & Vendas</h1>
+                        <p class="text-slate-300 text-xs sm:text-sm max-w-xl">
+                            Acompanhe orçamentos, faturamento potencial, taxa de fechamento de negócios e custo por hora da marcenaria.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="newQuoteInit()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-5 py-3 rounded-2xl shadow-xl transition transform hover:-translate-y-0.5 flex items-center space-x-2 text-xs sm:text-sm">
+                            <i class="fa-solid fa-plus text-sm"></i>
+                            <span>Criar Novo Orçamento</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <!-- Card 1: Total Orçado -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Volume Orçado</p>
+                            <h3 id="dashTotalValue" class="text-2xl font-black text-slate-900 mt-1">R$ 0,00</h3>
+                        </div>
+                        <div class="p-3 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100">
+                            <i class="fa-solid fa-calculator text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                        <span id="dashTotalCount" class="font-bold text-slate-800">0</span> propostas geradas
+                    </p>
+                </div>
+
+                <!-- Card 2: Aprovados -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Faturamento Aprovado</p>
+                            <h3 id="dashApprovedValue" class="text-2xl font-black text-emerald-600 mt-1">R$ 0,00</h3>
+                        </div>
+                        <div class="p-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                        <span id="dashApprovedCount" class="font-bold text-emerald-700">0</span> vendas fechadas
+                    </p>
+                </div>
+
+                <!-- Card 3: Custo Hora Atual -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition cursor-pointer" onclick="switchTab('custos')">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Seu Custo / Hora</p>
+                            <h3 id="dashHourlyCost" class="text-2xl font-black text-wood-700 mt-1">R$ 0,00</h3>
+                        </div>
+                        <div class="p-3 bg-wood-50 text-wood-700 rounded-2xl border border-wood-100">
+                            <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-wood-600 font-semibold mt-3 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i> Ajustar custo fixo
+                    </p>
+                </div>
+
+                <!-- Card 4: Materiais -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition cursor-pointer" onclick="switchTab('materiais')">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Materiais no Catálogo</p>
+                            <h3 id="dashMaterialsCount" class="text-2xl font-black text-slate-800 mt-1">0</h3>
+                        </div>
+                        <div class="p-3 bg-indigo-50 text-indigo-700 rounded-2xl border border-indigo-100">
+                            <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-indigo-600 font-semibold mt-3 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i> Gerenciar catálogo
+                    </p>
+                </div>
+            </div>
+
+            <!-- Recent Proposals and Tips -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Recent Quotes Table (2 cols) -->
+                <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Últimos Orçamentos</h2>
+                            <p class="text-xs text-slate-400">Atividades recentes registradas no sistema</p>
+                        </div>
+                        <button onclick="switchTab('historico')" class="text-xs font-bold text-wood-600 hover:text-wood-800 flex items-center gap-1">
+                            <span>Ver Todos</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600">
+                            <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-xl">Data</th>
+                                    <th class="p-3">Cliente / Projeto</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Valor Final</th>
+                                    <th class="p-3 text-center rounded-r-xl">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashRecentQuotesBody" class="divide-y divide-slate-100 font-medium">
+                                <!-- Dynamic JS Insert -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tips & Backup Options -->
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/80 rounded-3xl p-6 space-y-4 text-amber-950">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-hand-pointer text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-sm">Seleção Rápida por Clique</h3>
+                                <p class="text-[11px] text-amber-800">Recurso Estilo PDV / POS</p>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-amber-900/90 leading-relaxed">
+                            No criador de orçamentos, você pode **clicar diretamente nos cards dos produtos** para adicioná-los. Ajuste as quantidades usando os botões <strong class="text-amber-950">+</strong> e <strong class="text-amber-950">-</strong> de forma instantânea!
+                        </p>
+                    </div>
+
+                    <!-- Backup Storage Controls -->
+                    <div class="bg-white border border-slate-200/80 rounded-3xl p-6 space-y-3">
+                        <h3 class="font-bold text-xs text-slate-800 uppercase tracking-wider">Backup de Dados</h3>
+                        <p class="text-xs text-slate-500">Exporte ou restaure seus orçamentos e cadastros em arquivo PDF.</p>
+                        <div class="flex gap-2">
+                            <button onclick="exportDataJSON()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-download"></i> Baixar JSON
+                            </button>
+                            <button onclick="importDataJSON()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-upload"></i> Importar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="tab-orcamento" class="tab-content hidden space-y-6">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-4">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Calculadora de Orçamento</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Clique nos produtos para adicionar e monte o orçamento rapidamente.</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="newQuoteInit()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i> Limpar Formulário
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Input Sections (2 Cols) -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- 1. Client & Project Details -->
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-xl bg-wood-100 text-wood-700 flex items-center justify-center font-bold text-sm">1</div>
+                            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Cliente e Projeto</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Cliente *</label>
+                                <input type="text" id="qClientName" placeholder="Ex: Roberto Alves" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">WhatsApp / Telefone *</label>
+                                <input type="text" id="qClientPhone" placeholder="(00) 99999-9999" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Projeto / Móvel *</label>
+                                <input type="text" id="qProjectName" placeholder="Ex: Armário de Banheiro Mdf Freijó" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Prazo Estimado de Entrega</label>
+                                <input type="text" id="qDeliveryTime" placeholder="Ex: 15 a 20 dias úteis" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none transition">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Endereço de Entrega / Detalhes</label>
+                                <input type="text" id="qAddress" placeholder="Rua, número, bairro e observações da obra" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. QUICK-CLICK PRODUCT CATALOG (POS / PDV GRID) -->
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-xl bg-wood-100 text-wood-700 flex items-center justify-center font-bold text-sm">2</div>
+                                <div>
+                                    <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Catálogo - Seleção Rápida por Clique</h2>
+                                    <p class="text-[11px] text-slate-500">Clique em qualquer produto abaixo para adicioná-lo ao orçamento</p>
+                                </div>
+                            </div>
+
+                            <!-- Search bar for products -->
+                            <div class="relative w-full sm:w-64">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                                <input type="text" id="posSearchInput" oninput="renderPOSProductGrid()" placeholder="Buscar insumo..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Category Filter Pills -->
+                        <div class="flex flex-wrap gap-1.5" id="posCategoryPills">
+                            <button onclick="setPOSCategory('ALL')" id="pos-cat-ALL" class="pos-cat-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-wood-700 text-white shadow-xs">Todos</button>
+                            <button onclick="setPOSCategory('MDF')" id="pos-cat-MDF" class="pos-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">MDF / Chapas</button>
+                            <button onclick="setPOSCategory('Ferragens')" id="pos-cat-Ferragens" class="pos-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Ferragens</button>
+                            <button onclick="setPOSCategory('Fita de Borda')" id="pos-cat-Fita de Borda" class="pos-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Fita de Borda</button>
+                            <button onclick="setPOSCategory('Insumos')" id="pos-cat-Insumos" class="pos-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">Insumos</button>
+                        </div>
+
+                        <!-- Product POS Grid Cards -->
+                        <div id="posProductGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-80 overflow-y-auto p-1">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- 3. Items Added to Quote Table -->
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-xl bg-wood-100 text-wood-700 flex items-center justify-center font-bold text-sm">3</div>
+                                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Itens do Orçamento</h2>
+                            </div>
+                            <span id="posCartItemCount" class="text-xs font-black bg-amber-100 text-amber-800 px-3 py-1 rounded-full">0 itens selecionados</span>
+                        </div>
+
+                        <!-- Selected Items Container -->
+                        <div id="quoteItemsContainer" class="space-y-3">
+                            <!-- Rows injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- 4. Hours & Labor Calculation -->
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-xl bg-wood-100 text-wood-700 flex items-center justify-center font-bold text-sm">4</div>
+                            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Tempo Estimado de produção na marcenaria e Instalação</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Horas de Trabalho Estimadas</label>
+                                <input type="number" id="qLaborHours" value="10" min="0" step="0.5" oninput="calculateQuoteTotals()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm font-bold focus:ring-2 focus:ring-wood-500 focus:outline-none transition">
+                                <span class="text-[11px] text-slate-400 mt-1 block">Corte, fitamento, pré-montagem e instalação final</span>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Custo Hora da Sua Oficina</label>
+                                <input type="text" id="qHourRateDisplay" readonly class="w-full bg-slate-100 border border-slate-300 rounded-xl p-3 text-xs sm:text-sm font-extrabold text-slate-700">
+                                <span class="text-[11px] text-wood-600 mt-1 block cursor-pointer hover:underline" onclick="switchTab('custos')">Alterar parâmetros de custo fixo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Profit Margin & Taxes Sliders -->
+                    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="flex items-center space-x-3 border-b border-slate-100 pb-3">
+                            <div class="w-8 h-8 rounded-xl bg-wood-100 text-wood-700 flex items-center justify-center font-bold text-sm">5</div>
+                            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Margem de Lucro & Impostos</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-bold text-slate-700">Margem de Lucro Líquido (%)</label>
+                                    <span id="qProfitMarginLabel" class="text-xs font-black text-emerald-600">35%</span>
+                                </div>
+                                <input type="range" id="qProfitMargin" min="10" max="100" value="35" oninput="calculateQuoteTotals()" class="w-full accent-wood-700 cursor-pointer">
+                                <span class="text-[11px] text-slate-400 block mt-1">Lucro limpo destinado ao crescimento da empresa</span>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-bold text-slate-700">Impostos / Taxas de Cartão (%)</label>
+                                    <span id="qTaxMarginLabel" class="text-xs font-black text-amber-600">6%</span>
+                                </div>
+                                <input type="range" id="qTaxMargin" min="0" max="30" value="6" oninput="calculateQuoteTotals()" class="w-full accent-amber-600 cursor-pointer">
+                                <span class="text-[11px] text-slate-400 block mt-1">Imposto MEI/Simples, maquininha ou transporte</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Live Financial Summary Card (1 Col) -->
+                <div class="space-y-6">
+                    <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl sticky top-20 border border-slate-800 space-y-6">
+                        
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                            <h2 class="text-base font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-receipt text-amber-500"></i> Resumo Interno
+                            </h2>
+                            <span class="text-[10px] bg-slate-800 text-amber-400 border border-slate-700 font-bold px-2 py-1 rounded-lg">Privado</span>
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between text-slate-300">
+                                <span>Total de Materiais/Ferragens:</span>
+                                <span id="resMaterialCost" class="font-bold text-white">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span>Custo de Horas Trabalhadas:</span>
+                                <span id="resLaborCost" class="font-bold text-white">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400 border-t border-slate-800 pt-2 font-semibold">
+                                <span>Custo Total de Produção:</span>
+                                <span id="resTotalCost" class="text-white">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between text-emerald-400 font-bold">
+                                <span>Lucro Bruto Estimado:</span>
+                                <span id="resProfitAmount">R$ 0,00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-400 text-[11px]">
+                                <span>Reserva de Impostos/Taxas:</span>
+                                <span id="resTaxAmount">R$ 0,00</span>
+                            </div>
+
+                            <div class="border-t border-slate-800 pt-4 mt-4 space-y-1">
+                                <span class="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block">Preço Final para o Cliente</span>
+                                <span id="resFinalPrice" class="text-3xl font-black text-amber-400 block">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-3 pt-2">
+                            <button onclick="renderProposalModal()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold py-3.5 px-4 rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                                <i class="fa-solid fa-file-invoice text-base"></i>
+                                <span>Gerar Proposta Comercial</span>
+                            </button>
+
+                            <button onclick="saveCurrentQuote('Pendente')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 px-4 rounded-2xl border border-slate-700 transition flex items-center justify-center gap-2 text-xs">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Salvar no Histórico</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="tab-historico" class="tab-content hidden space-y-6">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Histórico de Propostas</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Acompanhe e altere os status dos seus orçamentos salvos.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="historyFilterStatus" onchange="renderHistoryTable()" class="border border-slate-300 rounded-xl p-2.5 text-xs font-bold bg-white focus:outline-none">
+                        <option value="ALL">Todos os Status</option>
+                        <option value="Pendente">Pendentes</option>
+                        <option value="Aprovado">Aprovados</option>
+                        <option value="Rejeitado">Rejeitados</option>
+                        <option value="Concluído">Concluídos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-50 text-slate-700 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-4">Data</th>
+                                <th class="p-4">Cliente / Telefone</th>
+                                <th class="p-4">Projeto</th>
+                                <th class="p-4 text-right">Valor Final</th>
+                                <th class="p-4 text-center">Status</th>
+                                <th class="p-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100 font-medium">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="tab-materiais" class="tab-content hidden space-y-6">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Catálogo de Materiais & Insumos</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Mantenha os custos das suas chapas de MDF, fitas de borda e ferragens atualizados.</p>
+                </div>
+                <button onclick="openMaterialModal()" class="bg-wood-700 hover:bg-wood-800 text-white font-extrabold px-4 py-3 rounded-2xl text-xs transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-sm"></i> Adicionar Novo Material
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="matSearchInput" oninput="renderMaterialsCatalog()" placeholder="Buscar material por nome..." class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                </div>
+                <select id="matCategoryFilter" onchange="renderMaterialsCatalog()" class="border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-700 bg-white focus:outline-none">
+                    <option value="ALL">Todas as Categorias</option>
+                    <option value="MDF">MDF / Chapas</option>
+                    <option value="Ferragens">Ferragens</option>
+                    <option value="Fita de Borda">Fitas de Borda</option>
+                    <option value="Insumos">Insumos & Outros</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-50 text-slate-700 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-4">Item / Descrição</th>
+                                <th class="p-4">Categoria</th>
+                                <th class="p-4">Unidade</th>
+                                <th class="p-4 text-right">Preço de Custo (R$)</th>
+                                <th class="p-4 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialsCatalogBody" class="divide-y divide-slate-100 font-medium">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="tab-custos" class="tab-content hidden space-y-6 max-w-4xl mx-auto">
+            
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Custos Fixos & Hora Trabalhada</h1>
+                <p class="text-xs sm:text-sm text-slate-500">Cadastre os custos mensais de operação para descobrir o valor exato da sua hora de oficina.</p>
+            </div>
+
+            <form id="costsConfigForm" onsubmit="saveCostsConfig(event)" class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                
+                <!-- Marcenaria Ident -->
+                <div class="space-y-4">
+                    <h2 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-store text-wood-600"></i> Identificação da Marcenaria
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nome Fantasia da Empresa</label>
+                            <input type="text" id="cfgBrandName" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">WhatsApp / Telefone Principal</label>
+                            <input type="text" id="cfgPhone" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fixed Costs Inputs -->
+                <div class="space-y-4">
+                    <h2 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-receipt text-wood-600"></i> Despesas Fixas Mensais da Oficina
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">1. Aluguel da Oficina / Galpão (R$)</label>
+                            <input type="number" id="cfgRent" step="0.01" min="0" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">2. Água, Luz e Internet (R$)</label>
+                            <input type="number" id="cfgUtilities" step="0.01" min="0" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">3. Depreciação de Máquinas & Afiação (R$)</label>
+                            <input type="number" id="cfgDepreciation" step="0.01" min="0" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">4. Pró-Labore do Marceneiro (R$)</label>
+                            <input type="number" id="cfgSalaries" step="0.01" min="0" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">5. Salário / Pró-labore Ajudantes (R$)</label>
+                            <input type="number" id="cfgHelpers" step="0.01" min="0" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">6. Outras Despesas (MEI, Sistemas) (R$)</label>
+                            <input type="number" id="cfgOtherCosts" step="0.01" min="0" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Working Time Schedule -->
+                <div class="space-y-4 pt-2">
+                    <h2 class="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-2 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-clock text-wood-600"></i> Jornada de Trabalho da Marcenaria
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Dias Trabalhados por Mês</label>
+                            <input type="number" id="cfgWorkDays" min="1" max="31" value="22" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none" required>
+                            <span class="text-[10px] text-slate-400">Padrão: 22 dias por mês</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Horas de Trabalho por Dia</label>
+                            <input type="number" id="cfgWorkHoursPerDay" min="1" max="24" value="8" oninput="calculateConfigHourRate()" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none" required>
+                            <span class="text-[10px] text-slate-400">Padrão: 8 horas por dia</span>
+                        </div>
+                    </div>
+
+                    <!-- Calculated Result Badge -->
+                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 p-5 rounded-2xl shadow-md space-y-1 mt-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] uppercase font-black tracking-wider text-amber-950 block">Seu Custo Hora Calculado</span>
+                            <span id="cfgTotalMonthlyHoursDisplay" class="text-xs font-bold text-amber-950">176 horas/mês</span>
+                        </div>
+                        <span id="cfgCalculatedHourRate" class="text-3xl font-black block">R$ 0,00 / hora</span>
+                        <p class="text-[11px] font-medium text-amber-900">Despesa Fixa Mensal Total: <span id="cfgTotalFixedDisplay" class="font-bold">R$ 0,00</span></p>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100">
+                    <button type="submit" class="w-full bg-wood-700 hover:bg-wood-800 text-white font-extrabold py-3.5 rounded-2xl transition shadow-lg text-sm">
+                        Salvar Configurações da Oficina
+                    </button>
+                </div>
+            </form>
+
+        </section>
+
+    </main>
+
+    <div id="proposalModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden z-50 overflow-y-auto p-4 sm:p-6 flex justify-center items-start">
+        <div class="bg-white rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden my-6 border border-slate-100 flex flex-col">
+            
+            <!-- Modal Header Toolbar (Hidden in Print) -->
+            <div class="no-print bg-slate-900 p-4 text-white flex flex-wrap justify-between items-center gap-3 border-b border-slate-800">
+                <button onclick="closeProposalModal()" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar ao Orçamento
+                </button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="sendProposalWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md">
+                        <i class="fa-brands fa-whatsapp text-sm"></i> Enviar WhatsApp
+                    </button>
+                    <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-print text-sm"></i> Imprimir / PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- PROPOSAL PRINTABLE AREA -->
+            <div id="printableProposalArea" class="proposal-card p-8 sm:p-12 space-y-8 bg-white text-slate-800">
+                
+                <!-- Proposal Header -->
+                <div class="flex justify-between items-start border-b border-slate-200 pb-6">
+                    <div>
+                        <h2 id="prpCompanyName" class="text-2xl font-black text-slate-900 uppercase tracking-tight">MARCENARIA PRO</h2>
+                        <p id="prpCompanyPhone" class="text-xs text-slate-500 mt-1">Contato: (00) 00000-0000</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block bg-wood-100 text-wood-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">Proposta Comercial</span>
+                        <p id="prpDate" class="text-xs text-slate-500 mt-2">Emissão: 00/00/0000</p>
+                    </div>
+                </div>
+
+                <!-- Client & Project Info -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-200/60">
+                    <div>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Cliente</span>
+                        <h3 id="prpClientName" class="text-base font-bold text-slate-900 mt-0.5">-</h3>
+                        <p id="prpClientPhone" class="text-xs text-slate-600 mt-0.5">-</p>
+                        <p id="prpClientAddress" class="text-xs text-slate-500 mt-1">-</p>
+                    </div>
+                    <div class="border-t sm:border-t-0 sm:border-l border-slate-200 pt-3 sm:pt-0 sm:pl-4">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Projeto / Móvel</span>
+                        <h3 id="prpProjectName" class="text-base font-bold text-slate-900 mt-0.5">-</h3>
+                        <p id="prpDeliveryTime" class="text-xs text-slate-600 mt-0.5">Prazo estimado: -</p>
+                    </div>
+                </div>
+
+                <!-- Items & Materials Included -->
+                <div class="space-y-3">
+                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2">
+                        Especificações Técnicas e Insumos do Projeto
+                    </h4>
+                    <ul id="prpMaterialsList" class="divide-y divide-slate-100 text-xs text-slate-700">
+                        <!-- Items injected by JS -->
+                    </ul>
+                </div>
+
+                <!-- Payment & Warranty -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px] text-slate-500 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div>
+                        <h5 class="font-bold text-slate-800 mb-1">Garantia & Acabamento</h5>
+                        <p>Garantia de 12 meses contra defeitos de fabricação. Instalação profissional e MDFs selecionados.</p>
+                    </div>
+                    <div>
+                        <h5 class="font-bold text-slate-800 mb-1">Condições de Pagamento</h5>
+                        <p>Validade do orçamento: 15 dias. Entrada de 50% para início da produção e 50% na conclusão.</p>
+                    </div>
+                </div>
+
+                <!-- Proposal Total Price -->
+                <div class="flex justify-between items-center border-t border-slate-200 pt-6">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Valor do Investimento</span>
+                        <span id="prpFinalPrice" class="text-3xl font-black text-slate-900">R$ 0,00</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-emerald-700 font-bold bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 inline-block">Projeto Sem Custos Ocultos</span>
+                    </div>
+                </div>
+
+                <!-- Signatures for Print -->
+                <div class="pt-12 grid grid-cols-2 gap-12 text-center text-[10px] text-slate-400 print-only">
+                    <div class="border-t border-slate-300 pt-2">
+                        <span>Marcenaria (Responsável Técnico)</span>
+                    </div>
+                    <div class="border-t border-slate-300 pt-2">
+                        <span>Cliente (Aceite da Proposta)</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="materialModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 id="matModalTitle" class="font-black text-slate-900 text-base">Adicionar Item ao Catálogo</h3>
+                <button onclick="closeMaterialModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="materialForm" onsubmit="saveMaterialModalForm(event)" class="space-y-4">
+                <input type="hidden" id="matModalId">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Item / Descrição *</label>
+                    <input type="text" id="matModalName" placeholder="Ex: MDF Louro Freijó 18mm (Chapa)" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Categoria *</label>
+                    <select id="matModalCategory" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                        <option value="MDF">MDF / Chapas</option>
+                        <option value="Ferragens">Ferragens (Dobradiça, Corrediça)</option>
+                        <option value="Fita de Borda">Fita de Borda</option>
+                        <option value="Insumos">Insumos (Cola, Parafuso, Verniz)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Unidade *</label>
+                        <select id="matModalUnit" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none">
+                            <option value="Chapa">Chapa</option>
+                            <option value="Metro">Metro</option>
+                            <option value="Unidade">Unidade</option>
+                            <option value="Par">Par</option>
+                            <option value="Pacote">Pacote / Kit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Preço de Custo (R$) *</label>
+                        <input type="number" id="matModalPrice" step="0.01" min="0" placeholder="0.00" class="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:ring-2 focus:ring-wood-500 focus:outline-none" required>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-2">
+                    <button type="button" onclick="closeMaterialModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition text-xs">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 bg-wood-700 hover:bg-wood-800 text-white font-bold py-3 rounded-xl transition text-xs shadow-md">
+                        Salvar Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* Default Initial Settings */
+        const defaultSettings = {
+            brandName: "Marcenaria Artesanal Sob Medida",
+            phone: "(41) 99888-7766",
+            rent: 2200.00,
+            utilities: 650.00,
+            depreciation: 350.00,
+            salaries: 4500.00,
+            helpers: 2000.00,
+            otherCosts: 300.00,
+            workDays: 22,
+            workHoursPerDay: 8
+        };
+
+        const defaultMaterials = [
+            { id: "m1", name: "MDF Branco TX 18mm (2.75m x 1.85m)", category: "MDF", unit: "Chapa", price: 235.00 },
+            { id: "m2", name: "MDF Louro Freijó 18mm (2.75m x 1.85m)", category: "MDF", unit: "Chapa", price: 390.00 },
+            { id: "m3", name: "MDF Grafite Sagrado 15mm", category: "MDF", unit: "Chapa", price: 310.00 },
+            { id: "m4", name: "Fita de Borda PVC Louro Freijó 22mm", category: "Fita de Borda", unit: "Metro", price: 2.80 },
+            { id: "m5", name: "Fita de Borda PVC Branca 22mm", category: "Fita de Borda", unit: "Metro", price: 1.50 },
+            { id: "m6", name: "Dobradiça 35mm C/ Amortecedor Reta", category: "Ferragens", unit: "Unidade", price: 11.50 },
+            { id: "m7", name: "Corrediça Telescópica 45cm", category: "Ferragens", unit: "Par", price: 26.00 },
+            { id: "m8", name: "Kit Parafusos, Cola Pur e Embalagem", category: "Insumos", unit: "Pacote", price: 65.00 }
+        ];
+
+        /* Application Data State */
+        let appConfig = JSON.parse(localStorage.getItem('mpro_config')) || defaultSettings;
+        let materialsList = JSON.parse(localStorage.getItem('mpro_materials')) || defaultMaterials;
+        let quotesList = JSON.parse(localStorage.getItem('mpro_quotes')) || [];
+
+        let activeQuoteId = null;
+        let currentQuoteMaterials = [];
+        let selectedPOSCategory = 'ALL';
+
+        /* Initialization */
+        window.onload = function() {
+            saveStateToStorage();
+            loadConfigToForms();
+            renderDashboard();
+            renderMaterialsCatalog();
+            renderHistoryTable();
+            newQuoteInit();
+        };
+
+        function saveStateToStorage() {
+            localStorage.setItem('mpro_config', JSON.stringify(appConfig));
+            localStorage.setItem('mpro_materials', JSON.stringify(materialsList));
+            localStorage.setItem('mpro_quotes', JSON.stringify(quotesList));
+        }
+
+        /* Navigation Tab Switching */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            const target = document.getElementById('tab-' + tabId);
+            if(target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-wood-700', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeBtn = document.getElementById('btn-tab-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-wood-700', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-300');
+            }
+
+            if(tabId === 'dashboard') renderDashboard();
+            if(tabId === 'historico') renderHistoryTable();
+            if(tabId === 'materiais') renderMaterialsCatalog();
+            if(tabId === 'orcamento') renderPOSProductGrid();
+        }
+
+        function getCalculatedTotalFixed() {
+            return (parseFloat(appConfig.rent) || 0) +
+                   (parseFloat(appConfig.utilities) || 0) +
+                   (parseFloat(appConfig.depreciation) || 0) +
+                   (parseFloat(appConfig.salaries) || 0) +
+                   (parseFloat(appConfig.helpers) || 0) +
+                   (parseFloat(appConfig.otherCosts) || 0);
+        }
+
+        function getMonthlyHours() {
+            const days = parseFloat(appConfig.workDays) || 22;
+            const hoursPerDay = parseFloat(appConfig.workHoursPerDay) || 8;
+            return days * hoursPerDay;
+        }
+
+        function getCalculatedHourRate() {
+            const totalHours = getMonthlyHours();
+            if (totalHours <= 0) return 0;
+            return getCalculatedTotalFixed() / totalHours;
+        }
+
+        function loadConfigToForms() {
+            document.getElementById('cfgBrandName').value = appConfig.brandName;
+            document.getElementById('cfgPhone').value = appConfig.phone;
+            document.getElementById('cfgRent').value = appConfig.rent;
+            document.getElementById('cfgUtilities').value = appConfig.utilities;
+            document.getElementById('cfgDepreciation').value = appConfig.depreciation;
+            document.getElementById('cfgSalaries').value = appConfig.salaries;
+            document.getElementById('cfgHelpers').value = appConfig.helpers || 0;
+            document.getElementById('cfgOtherCosts').value = appConfig.otherCosts;
+            document.getElementById('cfgWorkDays').value = appConfig.workDays || 22;
+            document.getElementById('cfgWorkHoursPerDay').value = appConfig.workHoursPerDay || 8;
+
+            document.getElementById('navBrandName').innerText = appConfig.brandName;
+            calculateConfigHourRate();
+        }
+
+        function calculateConfigHourRate() {
+            const rent = parseFloat(document.getElementById('cfgRent').value) || 0;
+            const utilities = parseFloat(document.getElementById('cfgUtilities').value) || 0;
+            const depreciation = parseFloat(document.getElementById('cfgDepreciation').value) || 0;
+            const salaries = parseFloat(document.getElementById('cfgSalaries').value) || 0;
+            const helpers = parseFloat(document.getElementById('cfgHelpers').value) || 0;
+            const other = parseFloat(document.getElementById('cfgOtherCosts').value) || 0;
+
+            const workDays = parseFloat(document.getElementById('cfgWorkDays').value) || 1;
+            const hoursPerDay = parseFloat(document.getElementById('cfgWorkHoursPerDay').value) || 1;
+
+            const totalFixed = rent + utilities + depreciation + salaries + helpers + other;
+            const monthlyHours = workDays * hoursPerDay;
+            const rate = monthlyHours > 0 ? totalFixed / monthlyHours : 0;
+
+            document.getElementById('cfgCalculatedHourRate').innerText = formatCurrency(rate) + ' / h';
+            document.getElementById('cfgTotalFixedDisplay').innerText = formatCurrency(totalFixed);
+            document.getElementById('cfgTotalMonthlyHoursDisplay').innerText = monthlyHours + ' horas/mês';
+        }
+
+        function saveCostsConfig(e) {
+            e.preventDefault();
+            appConfig.brandName = document.getElementById('cfgBrandName').value;
+            appConfig.phone = document.getElementById('cfgPhone').value;
+            appConfig.rent = parseFloat(document.getElementById('cfgRent').value) || 0;
+            appConfig.utilities = parseFloat(document.getElementById('cfgUtilities').value) || 0;
+            appConfig.depreciation = parseFloat(document.getElementById('cfgDepreciation').value) || 0;
+            appConfig.salaries = parseFloat(document.getElementById('cfgSalaries').value) || 0;
+            appConfig.helpers = parseFloat(document.getElementById('cfgHelpers').value) || 0;
+            appConfig.otherCosts = parseFloat(document.getElementById('cfgOtherCosts').value) || 0;
+            appConfig.workDays = parseFloat(document.getElementById('cfgWorkDays').value) || 22;
+            appConfig.workHoursPerDay = parseFloat(document.getElementById('cfgWorkHoursPerDay').value) || 8;
+
+            saveStateToStorage();
+            document.getElementById('navBrandName').innerText = appConfig.brandName;
+            calculateQuoteTotals();
+            alert('Configurações salvas com sucesso!');
+            switchTab('dashboard');
+        }
+
+        /* --- POS / QUICK-CLICK PRODUCT SELECTOR LOGIC --- */
+        function setPOSCategory(cat) {
+            selectedPOSCategory = cat;
+            document.querySelectorAll('.pos-cat-btn').forEach(btn => {
+                btn.classList.remove('bg-wood-700', 'text-white', 'shadow-xs');
+                btn.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const active = document.getElementById('pos-cat-' + cat);
+            if (active) {
+                active.classList.add('bg-wood-700', 'text-white', 'shadow-xs');
+                active.classList.remove('bg-slate-100', 'text-slate-600');
+            }
+            renderPOSProductGrid();
+        }
+
+        function renderPOSProductGrid() {
+            const grid = document.getElementById('posProductGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const searchTerm = document.getElementById('posSearchInput')?.value.toLowerCase() || '';
+
+            const filtered = materialsList.filter(m => {
+                const matchName = m.name.toLowerCase().includes(searchTerm);
+                const matchCat = selectedPOSCategory === 'ALL' || m.category === selectedPOSCategory;
+                return matchName && matchCat;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-6 text-slate-400 text-xs font-medium">Nenhum produto encontrado neste filtro.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const inCartItem = currentQuoteMaterials.find(x => x.materialId === item.id);
+                const inCartQty = inCartItem ? inCartItem.quantity : 0;
+
+                let icon = 'fa-cubes';
+                let iconBg = 'bg-wood-100 text-wood-700';
+                if (item.category === 'MDF') { icon = 'fa-layer-group'; iconBg = 'bg-amber-100 text-amber-800'; }
+                if (item.category === 'Ferragens') { icon = 'fa-screwdriver-wrench'; iconBg = 'bg-slate-100 text-slate-800'; }
+                if (item.category === 'Fita de Borda') { icon = 'fa-tape'; iconBg = 'bg-indigo-100 text-indigo-700'; }
+                if (item.category === 'Insumos') { icon = 'fa-box-open'; iconBg = 'bg-emerald-100 text-emerald-800'; }
+
+                const card = document.createElement('div');
+                card.className = `group cursor-pointer rounded-2xl border p-3 bg-white transition hover:shadow-md flex flex-col justify-between relative overflow-hidden select-none ${inCartQty > 0 ? 'border-wood-500 ring-2 ring-wood-500/20 bg-wood-50/20' : 'border-slate-200 hover:border-wood-400'}`;
+
+                card.onclick = () => addProductByPOSClick(item.id);
+
+                card.innerHTML = `
+                    ${inCartQty > 0 ? `<span class="absolute top-2 right-2 bg-wood-700 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">x${inCartQty}</span>` : ''}
+                    <div>
+                        <div class="w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center font-bold text-xs mb-2">
+                            <i class="fa-solid ${icon}"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-slate-900 leading-snug line-clamp-2">${item.name}</h4>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block">${item.unit}</span>
+                            <span class="text-xs font-black text-slate-900">${formatCurrency(item.price)}</span>
+                        </div>
+                        <button class="w-7 h-7 rounded-xl bg-slate-100 group-hover:bg-wood-700 group-hover:text-white text-slate-600 flex items-center justify-center text-xs font-bold transition">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addProductByPOSClick(matId) {
+            const mat = materialsList.find(m => m.id === matId);
+            if (!mat) return;
+
+            const existingIndex = currentQuoteMaterials.findIndex(x => x.materialId === matId);
+            if (existingIndex !== -1) {
+                currentQuoteMaterials[existingIndex].quantity += 1;
+            } else {
+                currentQuoteMaterials.push({
+                    materialId: matId,
+                    quantity: 1,
+                    unitPrice: mat.price
+                });
+            }
+
+            renderPOSProductGrid();
+            renderQuoteItemRows();
+            calculateQuoteTotals();
+        }
+
+        function adjustItemQty(index, delta) {
+            currentQuoteMaterials[index].quantity += delta;
+            if (currentQuoteMaterials[index].quantity <= 0) {
+                currentQuoteMaterials.splice(index, 1);
+            }
+            renderPOSProductGrid();
+            renderQuoteItemRows();
+            calculateQuoteTotals();
+        }
+
+        function renderQuoteItemRows() {
+            const container = document.getElementById('quoteItemsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const cartCountEl = document.getElementById('posCartItemCount');
+            if (cartCountEl) {
+                const totalItemsCount = currentQuoteMaterials.reduce((acc, curr) => acc + curr.quantity, 0);
+                cartCountEl.innerText = `${totalItemsCount} item(ns) adicionado(s)`;
+            }
+
+            if (currentQuoteMaterials.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 text-slate-400">
+                        <i class="fa-solid fa-hand-pointer text-2xl mb-2 block text-slate-300"></i>
+                        <p class="text-xs font-bold">Nenhum item selecionado.</p>
+                        <p class="text-[11px]">Clique em qualquer produto do catálogo acima para adicionar ao orçamento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentQuoteMaterials.forEach((item, idx) => {
+                const mat = materialsList.find(m => m.id === item.materialId) || { name: 'Item não encontrado', unit: 'un', price: item.unitPrice };
+
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 gap-2 items-center bg-slate-50 p-3 rounded-2xl border border-slate-200/80 hover:bg-slate-100/50 transition';
+
+                row.innerHTML = `
+                    <div class="col-span-12 sm:col-span-5">
+                        <h4 class="font-extrabold text-xs text-slate-900">${mat.name}</h4>
+                        <span class="text-[10px] text-slate-400 font-semibold">${formatCurrency(item.unitPrice)} / ${mat.unit}</span>
+                    </div>
+
+                    <!-- Quantity Stepper Buttons -->
+                    <div class="col-span-6 sm:col-span-3 flex items-center justify-center space-x-1">
+                        <button onclick="adjustItemQty(${idx}, -1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-700 font-black text-xs flex items-center justify-center transition shadow-xs">
+                            -
+                        </button>
+                        <input type="number" value="${item.quantity}" min="0.1" step="0.1" oninput="updateQuoteItemQty(${idx}, this.value)" class="w-14 border border-slate-300 rounded-lg py-1 px-1 text-xs text-center font-black bg-white focus:outline-none">
+                        <button onclick="adjustItemQty(${idx}, 1)" class="w-7 h-7 rounded-lg bg-white border border-slate-300 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 text-slate-700 font-black text-xs flex items-center justify-center transition shadow-xs">
+                            +
+                        </button>
+                    </div>
+
+                    <div class="col-span-4 sm:col-span-3 text-right font-black text-slate-900 text-xs">
+                        ${formatCurrency(item.quantity * item.unitPrice)}
+                    </div>
+
+                    <div class="col-span-2 sm:col-span-1 text-center">
+                        <button onclick="removeQuoteItemRow(${idx})" class="text-slate-400 hover:text-rose-600 p-1 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function removeQuoteItemRow(index) {
+            currentQuoteMaterials.splice(index, 1);
+            renderPOSProductGrid();
+            renderQuoteItemRows();
+            calculateQuoteTotals();
+        }
+
+        function updateQuoteItemQty(index, qty) {
+            const parsed = parseFloat(qty);
+            if (isNaN(parsed) || parsed <= 0) {
+                currentQuoteMaterials[index].quantity = 1;
+            } else {
+                currentQuoteMaterials[index].quantity = parsed;
+            }
+            renderPOSProductGrid();
+            calculateQuoteTotals();
+        }
+
+        function renderMaterialsCatalog() {
+            const tbody = document.getElementById('materialsCatalogBody');
+            tbody.innerHTML = '';
+
+            const searchTerm = document.getElementById('matSearchInput')?.value.toLowerCase() || '';
+            const catFilter = document.getElementById('matCategoryFilter')?.value || 'ALL';
+
+            const filtered = materialsList.filter(m => {
+                const matchName = m.name.toLowerCase().includes(searchTerm);
+                const matchCat = catFilter === 'ALL' || m.category === catFilter;
+                return matchName && matchCat;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium">Nenhum material cadastrado.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-800">${item.name}</td>
+                    <td class="p-4"><span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase">${item.category}</span></td>
+                    <td class="p-4 text-slate-600">${item.unit}</td>
+                    <td class="p-4 text-right font-black text-slate-900">${formatCurrency(item.price)}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="openMaterialModal('${item.id}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteMaterialItem('${item.id}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openMaterialModal(id = null) {
+            document.getElementById('materialForm').reset();
+            document.getElementById('matModalId').value = '';
+
+            if (id) {
+                const mat = materialsList.find(m => m.id === id);
+                if (mat) {
+                    document.getElementById('matModalId').value = mat.id;
+                    document.getElementById('matModalName').value = mat.name;
+                    document.getElementById('matModalCategory').value = mat.category;
+                    document.getElementById('matModalUnit').value = mat.unit;
+                    document.getElementById('matModalPrice').value = mat.price;
+                    document.getElementById('matModalTitle').innerText = 'Editar Item do Catálogo';
+                }
+            } else {
+                document.getElementById('matModalTitle').innerText = 'Adicionar Item ao Catálogo';
+            }
+
+            document.getElementById('materialModal').classList.remove('hidden');
+        }
+
+        function closeMaterialModal() {
+            document.getElementById('materialModal').classList.add('hidden');
+        }
+
+        function saveMaterialModalForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('matModalId').value;
+            const name = document.getElementById('matModalName').value;
+            const category = document.getElementById('matModalCategory').value;
+            const unit = document.getElementById('matModalUnit').value;
+            const price = parseFloat(document.getElementById('matModalPrice').value) || 0;
+
+            if (id) {
+                const idx = materialsList.findIndex(m => m.id === id);
+                if (idx !== -1) materialsList[idx] = { id, name, category, unit, price };
+            } else {
+                materialsList.push({ id: 'mat_' + Date.now(), name, category, unit, price });
+            }
+
+            saveStateToStorage();
+            closeMaterialModal();
+            renderMaterialsCatalog();
+            renderPOSProductGrid();
+        }
+
+        function deleteMaterialItem(id) {
+            if (confirm('Deseja remover este material do catálogo?')) {
+                materialsList = materialsList.filter(m => m.id !== id);
+                saveStateToStorage();
+                renderMaterialsCatalog();
+                renderPOSProductGrid();
+            }
+        }
+
+        function newQuoteInit() {
+            activeQuoteId = null;
+            document.getElementById('qClientName').value = '';
+            document.getElementById('qClientPhone').value = '';
+            document.getElementById('qProjectName').value = '';
+            document.getElementById('qDeliveryTime').value = '';
+            document.getElementById('qAddress').value = '';
+            document.getElementById('qLaborHours').value = 10;
+            document.getElementById('qProfitMargin').value = 35;
+            document.getElementById('qTaxMargin').value = 6;
+
+            currentQuoteMaterials = [
+                { materialId: materialsList[0]?.id || '', quantity: 2, unitPrice: materialsList[0]?.price || 0 },
+                { materialId: materialsList[5]?.id || '', quantity: 8, unitPrice: materialsList[5]?.price || 0 }
+            ];
+
+            renderPOSProductGrid();
+            renderQuoteItemRows();
+            calculateQuoteTotals();
+            switchTab('orcamento');
+        }
+
+        function calculateQuoteTotals() {
+            let totalMaterialsCost = 0;
+            currentQuoteMaterials.forEach(item => {
+                totalMaterialsCost += (item.quantity * item.unitPrice);
+            });
+
+            const laborHours = parseFloat(document.getElementById('qLaborHours').value) || 0;
+            const hourRate = getCalculatedHourRate();
+            const totalLaborCost = laborHours * hourRate;
+
+            const totalCost = totalMaterialsCost + totalLaborCost;
+
+            const profitMarginPct = parseFloat(document.getElementById('qProfitMargin').value) || 0;
+            const taxMarginPct = parseFloat(document.getElementById('qTaxMargin').value) || 0;
+
+            document.getElementById('qProfitMarginLabel').innerText = profitMarginPct + '%';
+            document.getElementById('qTaxMarginLabel').innerText = taxMarginPct + '%';
+
+            const totalMarginFrac = (profitMarginPct + taxMarginPct) / 100;
+            let finalPrice = 0;
+
+            if (totalMarginFrac < 1) {
+                finalPrice = totalCost / (1 - totalMarginFrac);
+            } else {
+                finalPrice = totalCost * (1 + totalMarginFrac);
+            }
+
+            const profitAmount = finalPrice * (profitMarginPct / 100);
+            const taxAmount = finalPrice * (taxMarginPct / 100);
+
+            document.getElementById('qHourRateDisplay').value = formatCurrency(hourRate) + ' / h';
+            document.getElementById('resMaterialCost').innerText = formatCurrency(totalMaterialsCost);
+            document.getElementById('resLaborCost').innerText = formatCurrency(totalLaborCost);
+            document.getElementById('resTotalCost').innerText = formatCurrency(totalCost);
+            document.getElementById('resProfitAmount').innerText = formatCurrency(profitAmount);
+            document.getElementById('resTaxAmount').innerText = formatCurrency(taxAmount);
+            document.getElementById('resFinalPrice').innerText = formatCurrency(finalPrice);
+
+            return {
+                totalMaterialsCost,
+                totalLaborCost,
+                totalCost,
+                profitAmount,
+                taxAmount,
+                finalPrice,
+                profitMarginPct,
+                taxMarginPct,
+                laborHours
+            };
+        }
+
+        function saveCurrentQuote(status = 'Pendente') {
+            const clientName = document.getElementById('qClientName').value.trim();
+            const projectName = document.getElementById('qProjectName').value.trim();
+
+            if (!clientName || !projectName) {
+                alert('Preencha pelo menos o Nome do Cliente e o Nome do Projeto.');
+                return;
+            }
+
+            const totals = calculateQuoteTotals();
+
+            const quoteData = {
+                id: activeQuoteId || 'q_' + Date.now(),
+                date: new Date().toLocaleDateString('pt-BR'),
+                clientName,
+                clientPhone: document.getElementById('qClientPhone').value,
+                projectName,
+                deliveryTime: document.getElementById('qDeliveryTime').value,
+                address: document.getElementById('qAddress').value,
+                items: JSON.parse(JSON.stringify(currentQuoteMaterials)),
+                laborHours: totals.laborHours,
+                totals,
+                status
+            };
+
+            if (activeQuoteId) {
+                const idx = quotesList.findIndex(q => q.id === activeQuoteId);
+                if (idx !== -1) quotesList[idx] = quoteData;
+            } else {
+                quotesList.unshift(quoteData);
+                activeQuoteId = quoteData.id;
+            }
+
+            saveStateToStorage();
+            alert('Orçamento salvo com sucesso!');
+            renderDashboard();
+            renderHistoryTable();
+        }
+
+        function renderProposalModal() {
+            const clientName = document.getElementById('qClientName').value || 'Cliente não informado';
+            const projectName = document.getElementById('qProjectName').value || 'Projeto Sob Medida';
+            const totals = calculateQuoteTotals();
+
+            document.getElementById('prpCompanyName').innerText = appConfig.brandName;
+            document.getElementById('prpCompanyPhone').innerText = 'Contato: ' + appConfig.phone;
+            document.getElementById('prpDate').innerText = 'Emissão: ' + new Date().toLocaleDateString('pt-BR');
+
+            document.getElementById('prpClientName').innerText = clientName;
+            document.getElementById('prpClientPhone').innerText = document.getElementById('qClientPhone').value || '-';
+            document.getElementById('prpClientAddress').innerText = document.getElementById('qAddress').value || '-';
+
+            document.getElementById('prpProjectName').innerText = projectName;
+            document.getElementById('prpDeliveryTime').innerText = 'Prazo estimado: ' + (document.getElementById('qDeliveryTime').value || 'A combinar');
+
+            const listContainer = document.getElementById('prpMaterialsList');
+            listContainer.innerHTML = '';
+
+            currentQuoteMaterials.forEach(item => {
+                const mat = materialsList.find(m => m.id === item.materialId);
+                if (mat) {
+                    const li = document.createElement('li');
+                    li.className = 'py-2 flex justify-between items-center';
+                    li.innerHTML = `
+                        <span class="font-medium text-slate-800">${mat.name}</span>
+                        <span class="font-bold text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded">${item.quantity} ${mat.unit}(s)</span>
+                    `;
+                    listContainer.appendChild(li);
+                }
+            });
+
+            document.getElementById('prpFinalPrice').innerText = formatCurrency(totals.finalPrice);
+            document.getElementById('proposalModal').classList.remove('hidden');
+        }
+
+        function closeProposalModal() {
+            document.getElementById('proposalModal').classList.add('hidden');
+        }
+
+        function sendProposalWhatsApp() {
+            const rawPhone = document.getElementById('qClientPhone').value.replace(/\D/g, '');
+            const clientName = document.getElementById('qClientName').value || 'Cliente';
+            const projectName = document.getElementById('qProjectName').value || 'Projeto Sob Medida';
+            const totals = calculateQuoteTotals();
+
+            const msg = `Olá *${clientName}*! Tudo bem?\n\n` +
+                        `Conforme solicitado, segue a proposta comercial para o projeto *${projectName}*:\n\n` +
+                        `*Valor do Investimento:* ${formatCurrency(totals.finalPrice)}\n` +
+                        `*Prazo Estimado de Entrega:* ${document.getElementById('qDeliveryTime').value || 'A combinar'}\n\n` +
+                        `Projeto produzido com MDFs de alta qualidade e ferragens com garantia.\n\n` +
+                        `Fico à disposição para esclarecer dúvidas e aprovar o projeto!\n\n` +
+                        `Atenciosamente,\n*${appConfig.brandName}*`;
+
+            const url = `https://api.whatsapp.com/send?phone=55${rawPhone}&text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            const statusFilter = document.getElementById('historyFilterStatus')?.value || 'ALL';
+            const filtered = quotesList.filter(q => statusFilter === 'ALL' || q.status === statusFilter);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium">Nenhum orçamento encontrado.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(q => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+
+                let badgeColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                if (q.status === 'Aprovado') badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-200';
+                if (q.status === 'Rejeitado') badgeColor = 'bg-rose-100 text-rose-800 border-rose-200';
+                if (q.status === 'Concluído') badgeColor = 'bg-blue-100 text-blue-800 border-blue-200';
+
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-700">${q.date}</td>
+                    <td class="p-4 font-bold text-slate-900">${q.clientName}<br><span class="text-[10px] text-slate-400 font-normal">${q.clientPhone}</span></td>
+                    <td class="p-4 text-slate-700">${q.projectName}</td>
+                    <td class="p-4 text-right font-black text-slate-900">${formatCurrency(q.totals.finalPrice)}</td>
+                    <td class="p-4 text-center">
+                        <select onchange="updateQuoteStatus('${q.id}', this.value)" class="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg border cursor-pointer focus:outline-none ${badgeColor}">
+                            <option value="Pendente" ${q.status === 'Pendente' ? 'selected' : ''}>Pendente</option>
+                            <option value="Aprovado" ${q.status === 'Aprovado' ? 'selected' : ''}>Aprovado</option>
+                            <option value="Rejeitado" ${q.status === 'Rejeitado' ? 'selected' : ''}>Rejeitado</option>
+                            <option value="Concluído" ${q.status === 'Concluído' ? 'selected' : ''}>Concluído</option>
+                        </select>
+                    </td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="loadQuoteIntoEditor('${q.id}')" title="Reabrir / Editar" class="text-wood-700 hover:text-wood-900 p-1"><i class="fa-solid fa-folder-open"></i></button>
+                        <button onclick="deleteQuoteHistory('${q.id}')" title="Excluir" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateQuoteStatus(id, newStatus) {
+            const q = quotesList.find(item => item.id === id);
+            if (q) {
+                q.status = newStatus;
+                saveStateToStorage();
+                renderDashboard();
+                renderHistoryTable();
+            }
+        }
+
+        function loadQuoteIntoEditor(id) {
+            const q = quotesList.find(item => item.id === id);
+            if (q) {
+                activeQuoteId = q.id;
+                document.getElementById('qClientName').value = q.clientName;
+                document.getElementById('qClientPhone').value = q.clientPhone;
+                document.getElementById('qProjectName').value = q.projectName;
+                document.getElementById('qDeliveryTime').value = q.deliveryTime;
+                document.getElementById('qAddress').value = q.address;
+                document.getElementById('qLaborHours').value = q.laborHours;
+                document.getElementById('qProfitMargin').value = q.totals.profitMarginPct;
+                document.getElementById('qTaxMargin').value = q.totals.taxMarginPct;
+
+                currentQuoteMaterials = JSON.parse(JSON.stringify(q.items));
+
+                renderPOSProductGrid();
+                renderQuoteItemRows();
+                calculateQuoteTotals();
+                switchTab('orcamento');
+            }
+        }
+
+        function deleteQuoteHistory(id) {
+            if (confirm('Deseja excluir permanentemente este orçamento?')) {
+                quotesList = quotesList.filter(q => q.id !== id);
+                saveStateToStorage();
+                renderDashboard();
+                renderHistoryTable();
+            }
+        }
+
+        function renderDashboard() {
+            let totalValue = 0;
+            let approvedValue = 0;
+            let approvedCount = 0;
+
+            quotesList.forEach(q => {
+                totalValue += q.totals.finalPrice;
+                if (q.status === 'Aprovado' || q.status === 'Concluído') {
+                    approvedValue += q.totals.finalPrice;
+                    approvedCount++;
+                }
+            });
+
+            document.getElementById('dashTotalValue').innerText = formatCurrency(totalValue);
+            document.getElementById('dashTotalCount').innerText = quotesList.length;
+            document.getElementById('dashApprovedValue').innerText = formatCurrency(approvedValue);
+            document.getElementById('dashApprovedCount').innerText = approvedCount;
+            document.getElementById('dashHourlyCost').innerText = formatCurrency(getCalculatedHourRate()) + '/h';
+            document.getElementById('dashMaterialsCount').innerText = materialsList.length;
+
+            const tbody = document.getElementById('dashRecentQuotesBody');
+            tbody.innerHTML = '';
+
+            if (quotesList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum orçamento cadastrado ainda.</td></tr>`;
+                return;
+            }
+
+            quotesList.slice(0, 5).forEach(q => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition';
+
+                let badgeColor = 'bg-amber-100 text-amber-800';
+                if (q.status === 'Aprovado') badgeColor = 'bg-emerald-100 text-emerald-800';
+                if (q.status === 'Rejeitado') badgeColor = 'bg-rose-100 text-rose-800';
+                if (q.status === 'Concluído') badgeColor = 'bg-blue-100 text-blue-800';
+
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-400 font-bold">${q.date}</td>
+                    <td class="p-3 font-bold text-slate-800">${q.clientName}<br><span class="text-[10px] text-slate-400 font-normal">${q.projectName}</span></td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${badgeColor}">${q.status}</span></td>
+                    <td class="p-3 text-right font-black text-slate-900">${formatCurrency(q.totals.finalPrice)}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="loadQuoteIntoEditor('${q.id}')" class="text-wood-700 hover:text-wood-900"><i class="fa-solid fa-arrow-right-long"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+        }
+
+        function exportDataJSON() {
+            const data = {
+                config: appConfig,
+                materials: materialsList,
+                quotes: quotesList
+            };
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_marcenaria_pro_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importDataJSON() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const parsed = JSON.parse(event.target.result);
+                        if (parsed.config && parsed.materials && parsed.quotes) {
+                            appConfig = parsed.config;
+                            materialsList = parsed.materials;
+                            quotesList = parsed.quotes;
+                            saveStateToStorage();
+                            alert('Dados restaurados com sucesso!');
+                            location.reload();
+                        } else {
+                            alert('Arquivo de backup inválido.');
+                        }
+                    } catch (err) {
+                        alert('Erro ao processar o arquivo de backup JSON.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>
